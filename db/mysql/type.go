@@ -1,7 +1,7 @@
-package types
+package mysql
 
 // MySQL 数据库连接配置
-type MySQLConfig struct {
+type ConnectionConfig struct {
 	Host     string
 	Port     int
 	User     string
@@ -9,3 +9,6 @@ type MySQLConfig struct {
 	Database string
 	Charset  string
 }
+
+// 数据库管理对象
+var DbManager *DatabaseManager

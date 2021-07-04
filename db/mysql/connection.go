@@ -1,68 +1,53 @@
 package mysql
 
 import (
-	"fmt"
-
 	"github.com/anoxia/clarck"
-	"github.com/anoxia/clarck/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
-type MySQLConnections map[string]*gorm.DB
+type connection struct {
+	// 当前数据连接(nowConn)所使用的配置信息
+	config ConnectionConfig
 
-var cons = make(MySQLConnections)
-
-// 获取指定名称的数据库连接
-// 如果未传入名称则使用 default 作为默认目标数据库
-func Get(dbnames ...string) (db *gorm.DB, e error) {
-	dbname := "default"
-	for _, v := range dbnames {
-		dbname = v
-		break
-	}
-
-	if cons[dbname] == nil {
-		db, e = connect(dbname)
-		if e != nil {
-			return
-		} else {
-			cons[dbname] = db
-		}
-	}
-
-	db = cons[dbname]
-
-	return
+	// 用于存储旧配置对应的数据库连接
+	// 起到平滑切换数据库连接的作用
+	// 防止连接被释放时仍有业务在使用中
+	old *gorm.DB
+	// 用于存储新配置对应的数据库连接
+	new *gorm.DB
 }
 
-// 连接指定数据库（连接配置在 configs 中，见 config.go）
-func connect(dbname string) (db *gorm.DB, e error) {
-	c, e := configs.Get(dbname)
+func (c *connection) Get() *gorm.DB {
+	return c.new
+}
+
+func (c *connection) Create(config ConnectionConfig) (e error) {
+	dsn := dsn(&config)
+
+	c.new, e = gorm.Open(mysql.Open(dsn), &gorm.Config{})
 	if e != nil {
-		e = clarck.New(1, "数据库配置未找到")
-		return
+		return clarck.NewFrameworkError(-1, "数据库连接失败", dsn, e.Error())
 	}
 
-	dsn := dsn(c)
-
-	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-	if err != nil {
-		fmt.Println("db connect failed: " + err.Error())
-	}
+	c.config = config
 
 	return
 }
 
-// 生成 gorm 连接 DSN 字符串
-func dsn(c *types.MySQLConfig) string {
-	return fmt.Sprintf(
-		"%s:%s@tcp(%s:%d)/%s?charset=%s",
-		c.User,
-		c.Password,
-		c.Host,
-		c.Port,
-		c.Database,
-		c.Charset,
-	)
+func (c *connection) Update(config ConnectionConfig) {
+	c.old = c.new
+	c.Create(config)
+}
+
+func (c *connection) Free() {
+	c.old = nil
+	c.new = nil
+}
+
+func (c *connection) ConfigIsDiff(config ConnectionConfig) bool {
+	if c.config == config {
+		return true
+	}
+	return false
 }

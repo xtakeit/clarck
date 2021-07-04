@@ -2,7 +2,7 @@ package errors
 
 import "testing"
 
-func TestConfigErrorTypeIsFramworkInterface(t *testing.T) {
+func TestConfigErrorTypeIsErrorInterface(t *testing.T) {
 	e := NewConfigError(0, "")
 	switch e.(type) {
 	case ErrorInterface:
