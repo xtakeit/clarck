@@ -11,4 +11,4 @@ type ConnectionConfig struct {
 }
 
 // 数据库管理对象
-var DbManager *DatabaseManager
+var Manager *DatabaseManager

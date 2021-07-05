@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type connection struct {
+type Connection struct {
 	// 当前数据连接(nowConn)所使用的配置信息
 	config ConnectionConfig
 
@@ -18,11 +18,11 @@ type connection struct {
 	new *gorm.DB
 }
 
-func (c *connection) Get() *gorm.DB {
-	return c.new
+func (c *Connection) Get() (*gorm.DB, error) {
+	return c.new, nil
 }
 
-func (c *connection) Create(config ConnectionConfig) (e error) {
+func (c *Connection) Create(config ConnectionConfig) (e error) {
 	dsn := dsn(&config)
 
 	c.new, e = gorm.Open(mysql.Open(dsn), &gorm.Config{})
@@ -35,17 +35,17 @@ func (c *connection) Create(config ConnectionConfig) (e error) {
 	return
 }
 
-func (c *connection) Update(config ConnectionConfig) {
+func (c *Connection) Update(config ConnectionConfig) {
 	c.old = c.new
 	c.Create(config)
 }
 
-func (c *connection) Free() {
+func (c *Connection) Free() {
 	c.old = nil
 	c.new = nil
 }
 
-func (c *connection) ConfigIsDiff(config ConnectionConfig) bool {
+func (c *Connection) ConfigIsDiff(config ConnectionConfig) bool {
 	if c.config == config {
 		return true
 	}

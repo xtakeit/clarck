@@ -6,28 +6,51 @@ import (
 )
 
 func init() {
-	DbManager = &DatabaseManager{
-		connections: make(map[string]connection),
+	Manager = &DatabaseManager{
+		connections: make(map[string]Connection),
 	}
 }
 
 type DatabaseManager struct {
-	connections map[string]connection
+	connections map[string]Connection
 	appConfig   *clarck.Config
 }
 
 func (m *DatabaseManager) GetConnection(dbname ...string) (*gorm.DB, error) {
-	if m.appConfig == nil {
-		return nil, clarck.NewConfigError(-1, "appConfig.Database 为空")
+	name := m.dealDbname(dbname...)
+
+	if m.Exist(name) {
+		return m.connections[name], nil
 	}
+
+	connection := m.CreateConnection(name)
+	m.connections[name] = connection
+	// return m.connections[name].Get()
+}
+
+func (m *DatabaseManager) CreateConnection(dbname string) Connection {
+	// if m.appConfig == nil {
+	// 	return nil, clarck.NewConfigError(-1, "appConfig.Database 为空")
+	// }
+
 }
 
 func (m *DatabaseManager) Exist(dbname string) bool {
-	return true
+	_, ok := m.connections[dbname]
+	return ok
 }
 
 func (m *DatabaseManager) SetConfig(config *clarck.Config) {
-	DbManager.appConfig = config
+	m.appConfig = config
+}
+
+func (*DatabaseManager) dealDbname(dbname ...string) string {
+	name := "default"
+	for _, v := range dbname {
+		name = v
+		break
+	}
+	return name
 }
 
 // type MySQLConnections map[string]*gorm.DB
