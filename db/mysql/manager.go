@@ -1,100 +1,83 @@
 package mysql
 
 import (
-	"github.com/anoxia/clarck"
+	"github.com/anoxia/clarck/errors"
+	"github.com/anoxia/clarck/framework"
 	"gorm.io/gorm"
 )
 
-func init() {
-	Manager = &DatabaseManager{
-		connections: make(map[string]Connection),
+type DatabaseManager struct {
+	connections map[string]*Connection
+	app         *framework.App
+}
+
+var manager *DatabaseManager
+
+func Init(app *framework.App) {
+	if manager == nil {
+		manager = &DatabaseManager{
+			connections: make(map[string]*Connection),
+			app:         app,
+		}
+
+		app.RegisterListenner("update:config", func(app *framework.App, action string) {
+		})
 	}
 }
 
-type DatabaseManager struct {
-	connections map[string]Connection
-	appConfig   *clarck.Config
+func Manager() *DatabaseManager {
+	return manager
 }
 
-func (m *DatabaseManager) GetConnection(dbname ...string) (*gorm.DB, error) {
-	name := m.dealDbname(dbname...)
+func (m *DatabaseManager) Exist(name string) bool {
+	if _, ok := m.connections[name]; ok {
+		return true
+	} else {
+		return false
+	}
+}
+
+func (m *DatabaseManager) GetDB(names ...string) (*gorm.DB, error) {
+	connection, err := m.GetConnection(names...)
+	if err != nil {
+		return nil, err
+	}
+
+	return connection.GetDB(), err
+}
+
+func (m *DatabaseManager) GetConnection(names ...string) (conn *Connection, err error) {
+	name := nameWithDefault(names...)
 
 	if m.Exist(name) {
 		return m.connections[name], nil
 	}
 
-	connection := m.CreateConnection(name)
-	m.connections[name] = connection
-	// return m.connections[name].Get()
+	if _, ok := m.app.Config().Database.Mysql[name]; !ok {
+		return nil, errors.NewConfigError(-1, "数据库配置未找到，请检查配置文件(application.yml)", name)
+	}
+
+	// 数据库连接配置
+	// 来自 application.yml 配置文件
+	config := m.app.Config().Database.Mysql[name]
+
+	// 创建数据库连接并保存
+	// 下次可直接使用
+	conn, err = NewConnection(config)
+	if err != nil {
+		return nil, errors.NewFrameworkError(-1, "创建数据库连接失败", err.Error())
+	} else {
+		m.connections[name] = conn
+	}
+
+	return
 }
 
-func (m *DatabaseManager) CreateConnection(dbname string) Connection {
-	// if m.appConfig == nil {
-	// 	return nil, clarck.NewConfigError(-1, "appConfig.Database 为空")
-	// }
-
-}
-
-func (m *DatabaseManager) Exist(dbname string) bool {
-	_, ok := m.connections[dbname]
-	return ok
-}
-
-func (m *DatabaseManager) SetConfig(config *clarck.Config) {
-	m.appConfig = config
-}
-
-func (*DatabaseManager) dealDbname(dbname ...string) string {
+func nameWithDefault(names ...string) string {
 	name := "default"
-	for _, v := range dbname {
+	for _, v := range names {
 		name = v
 		break
 	}
 	return name
 }
-
-// type MySQLConnections map[string]*gorm.DB
-
-// var conns = make(MySQLConnections)
-// var configs = NewConfigs()
-
-// // 连接指定数据库（连接配置在 configs 中，见 config.go）
-// func connect(dbname string) (db *gorm.DB, e error) {
-// 	c, e := configs.Get(dbname)
-// 	if e != nil {
-// 		e = clarck.NewConfigError(-1, "数据库配置未找到")
-// 		return
-// 	}
-
-// 	dsn := dsn(c)
-
-// 	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
-// 	if err != nil {
-// 		fmt.Println("db connect failed: " + err.Error())
-// 	}
-
-// 	return
-// }
-
-// // 获取指定名称的数据库连接
-// // 如果未传入名称则使用 default 作为默认目标数据库
-// func Get(dbnames ...string) (db *gorm.DB, e error) {
-// 	dbname := "default"
-// 	for _, v := range dbnames {
-// 		dbname = v
-// 		break
-// 	}
-
-// 	if conns[dbname] == nil {
-// 		db, e = connect(dbname)
-// 		if e != nil {
-// 			return
-// 		} else {
-// 			conns[dbname] = db
-// 		}
-// 	}
-
-// 	db = conns[dbname]
-
-// 	return
-// }

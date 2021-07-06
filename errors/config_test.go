@@ -1,6 +1,8 @@
 package errors
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestConfigErrorTypeIsErrorInterface(t *testing.T) {
 	e := NewConfigError(0, "")
@@ -9,4 +11,6 @@ func TestConfigErrorTypeIsErrorInterface(t *testing.T) {
 	default:
 		t.Errorf("ConfigError 应为 ErrorInterface 实现类型")
 	}
+
+	// assert.Equal(t, e.(ErrorInterface), true, "")
 }
