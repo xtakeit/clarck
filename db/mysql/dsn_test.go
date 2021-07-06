@@ -1,13 +1,17 @@
 package mysql
 
-import "testing"
+import (
+	"testing"
 
-var configForTest = ConnectionConfig{
+	"github.com/anoxia/clarck/types"
+)
+
+var configForTest = types.MyqlConfig{
 	Host:     "127.0.0.1",
 	Port:     3306,
 	User:     "root",
 	Password: "123456",
-	Database: "db_test",
+	Dbname:   "db_test",
 	Charset:  "utf8",
 }
 

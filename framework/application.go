@@ -9,9 +9,10 @@ import (
 )
 
 type App struct {
-	config    *types.Config
-	event     map[string]Listenner
-	bootstrap func(*App)
+	config        *types.Config
+	event         map[string]Listenner
+	httpBootstrap func(*App)
+	rpcBootstrap  func(*App)
 }
 
 func New() (app *App) {
@@ -20,7 +21,6 @@ func New() (app *App) {
 	}
 
 	app.loadConfigFromFile(os.Getenv("APPLICATION_FILE"))
-
 	return
 }
 
@@ -40,12 +40,24 @@ func (app *App) SetBootstrap(callback func(*App)) {
 	app.bootstrap = callback
 }
 
+func (app *App) SetHttpBootstrap(callback func(*App)) {
+	app.httpBootstrap = callback
+}
+
+func (app *App) SetRpcBootstrap(callback func(*App)) {
+	app.rpcBootstrap = callback
+}
+
 func (app *App) Run() {
-	if app.bootstrap == nil {
-		panic("服务启动失败，bootstrap 回掉方法未设置")
+	if app.rpcBootstrap != nil {
+		app.rpcBootstrap(app)
 	}
 
-	app.bootstrap(app)
+	if app.httpBootstrap != nil {
+		app.httpBootstrap(app)
+	}
+
+	panic("服务启动失败，bootstrap 回掉方法未设置")
 }
 
 func (app *App) loadConfigFromFile(filepath string) {
