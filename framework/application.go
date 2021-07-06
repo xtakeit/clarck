@@ -36,10 +36,6 @@ func (app *App) RegisterListenner(name string, callback func(app *App, action st
 	app.event[name] = append(app.event[name], callback)
 }
 
-func (app *App) SetBootstrap(callback func(*App)) {
-	app.bootstrap = callback
-}
-
 func (app *App) SetHttpBootstrap(callback func(*App)) {
 	app.httpBootstrap = callback
 }
