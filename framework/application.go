@@ -44,6 +44,10 @@ func (app *App) SetRpcBootstrap(callback func(*App)) {
 	app.rpcBootstrap = callback
 }
 
+func (app *App) SetConfig(config *types.Config)  {
+	app.config = config
+}
+
 func (app *App) Run() {
 	if app.rpcBootstrap != nil {
 		app.rpcBootstrap(app)
