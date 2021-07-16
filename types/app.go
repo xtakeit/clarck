@@ -7,4 +7,5 @@ type Http struct {
 type Config struct {
 	Database DatabaseConfig
 	Http     Http
+	Log      LogConfigManager
 }
