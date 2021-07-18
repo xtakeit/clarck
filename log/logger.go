@@ -8,8 +8,6 @@ import (
 	rotate "github.com/lestrrat/go-file-rotatelogs"
 	"github.com/rifflock/lfshook"
 	"github.com/sirupsen/logrus"
-
-	"github.com/anoxia/clarck/types"
 )
 
 const (
@@ -33,7 +31,7 @@ type Logger struct {
 }
 
 // NewLogger 返回日志工具实例
-func NewLogger(cf *types.LogConfigManager) (logger *Logger, err error) {
+func NewLogger(cf *LogConfigManager) (logger *Logger, err error) {
 	logger = &Logger{
 		Logger: logrus.New(),
 		outMap: make(map[string]io.Closer),
@@ -63,7 +61,7 @@ func NewLogger(cf *types.LogConfigManager) (logger *Logger, err error) {
 	return
 }
 
-func (logger *Logger) SetReportCaller(cf *types.LogConfigManager) {
+func (logger *Logger) SetReportCaller(cf *LogConfigManager) {
 	logger.Logger.SetReportCaller(cf.ReportCaller)
 }
 
@@ -75,7 +73,7 @@ func (logger *Logger) SetFormatter() {
 }
 
 // SetLevel 设置级别
-func (logger *Logger) SetLevel(cf *types.LogConfigManager) (err error) {
+func (logger *Logger) SetLevel(cf *LogConfigManager) (err error) {
 	level, err := logrus.ParseLevel(cf.Level)
 	if err != nil {
 		err = fmt.Errorf("parse level: %w", err)
@@ -97,13 +95,13 @@ func (logger *Logger) SetLevel(cf *types.LogConfigManager) (err error) {
 }*/
 
 // 设置日志输出，LogType不存在，默认文件输出
-func (logger *Logger) SetHook(cf *types.LogConfigManager) (err error) {
+func (logger *Logger) SetHook(cf *LogConfigManager) (err error) {
 	switch cf.LogType {
-	case types.File:
+	case File:
 		err = logger.setFileHook(cf.FileOutput)
-	case types.Remote:
+	case Remote:
 		//TODO 待添加远程输出
-	case types.All:
+	case All:
 		err = logger.setFileHook(cf.FileOutput)
 		//TODO 待添加远程输出
 	default:
@@ -112,7 +110,7 @@ func (logger *Logger) SetHook(cf *types.LogConfigManager) (err error) {
 	return
 }
 
-func (logger *Logger) setFileHook(configs map[string]types.FileConfig) (err error) {
+func (logger *Logger) setFileHook(configs map[string]FileConfig) (err error) {
 
 	// 创建日志输出回调，并防止被回收
 	outMap := make(map[string]*rotate.RotateLogs)

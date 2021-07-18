@@ -2,13 +2,12 @@ package mysql
 
 import (
 	"github.com/anoxia/clarck/errors"
-	"github.com/anoxia/clarck/types"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
 
 type Connection struct {
-	config types.MyqlConfig
+	config ItemConfig
 	// old    *gorm.DB
 	new *gorm.DB
 }
@@ -41,9 +40,9 @@ func (c *Connection) Free() {
 	c.new = nil
 }
 
-func NewConnection(config types.MyqlConfig) (*Connection, error) {
+func NewConnection(c ItemConfig) (*Connection, error) {
 	con := Connection{
-		config: config,
+		config: c,
 	}
 
 	err := con.open()

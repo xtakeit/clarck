@@ -9,30 +9,29 @@ import (
 	"time"
 
 	"github.com/anoxia/clarck/framework"
-	"github.com/anoxia/clarck/types"
 )
 
 var app *framework.App
 
 func TestMain(m *testing.M) {
-	fileOutput := make(map[string]types.FileConfig)
-	fileOutput[InfoLevel] = types.FileConfig{
+	fileOutput := make(map[string]FileConfig)
+	fileOutput[InfoLevel] = FileConfig{
 		OutPath:     "./info",
 		MaxAgeHours: 1,
 		RotateHours: 1,
 	}
-	fileOutput[ErrorLevel] = types.FileConfig{
+	fileOutput[ErrorLevel] = FileConfig{
 		OutPath:     "./error",
 		MaxAgeHours: 1,
 		RotateHours: 1,
 	}
 
 	app = &framework.App{}
-	app.SetConfig(&types.Config{
-		Log: types.LogConfigManager{
+	app.SetConfig(&Config{
+		Log: LogConfigManager{
 			Level:        InfoLevel,
 			ReportCaller: false,
-			LogType:      types.File,
+			LogType:      File,
 			FileOutput:   fileOutput,
 			RemoteOutput: nil,
 		},
@@ -140,7 +139,7 @@ func readFinalLine(filePath string, t *testing.T) string {
 	// 读取文件的最后一行
 	var preLine, line string
 	rd := bufio.NewReader(file)
-	for ; ; {
+	for {
 		line, err = rd.ReadString('\n')
 		if err != nil || io.EOF == err {
 			break

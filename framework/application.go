@@ -1,73 +1,83 @@
 package framework
 
 import (
-	"io/ioutil"
 	"os"
 
-	"github.com/anoxia/clarck/types"
-	"gopkg.in/yaml.v3"
+	"github.com/anoxia/clarck/errors"
+	"github.com/anoxia/clarck/framework/config"
 )
 
 type App struct {
-	config        *types.Config
-	event         map[string]Listenner
-	httpBootstrap func(*App)
-	rpcBootstrap  func(*App)
+	name        string
+	module      string
+	version     string
+	configPath  string
+	component   map[string]interface{}
+	serverSetup func(*App)
 }
 
 func New() (app *App) {
 	app = &App{
-		event: make(map[string]Listenner),
+		component: make(map[string]interface{}),
 	}
 
-	app.loadConfigFromFile(os.Getenv("APPLICATION_FILE"))
+	// 配置文件路径
+	app.configPath = os.Getenv("APPLICATION_FILE")
+
+	// 加载配置
+	c := &Config{}
+	config.LoadConfigFromFile(app.configPath, c)
+
+	// 将配置值注入当前实例
+	app.version = c.Application.Version
+	app.name = c.Application.Name
+	app.module = c.Application.Module
+
 	return
 }
 
+func (app *App) Name() string {
+	return app.name
+}
+
+func (app *App) Module() string {
+	return app.module
+}
+
 func (app *App) Version() string {
-	return "0.0.0"
+	return app.version
 }
 
-func (app *App) Config() *types.Config {
-	return app.config
+func (app *App) ConfigPath() string {
+	return app.configPath
 }
 
-func (app *App) RegisterListenner(name string, callback func(app *App, action string)) {
-	app.event[name] = append(app.event[name], callback)
+func (app *App) ConfigLoad(template interface{}) {
+	config.LoadConfigFromFile(app.configPath, template)
 }
 
-func (app *App) SetHttpBootstrap(callback func(*App)) {
-	app.httpBootstrap = callback
+func (app *App) Set(name string, module interface{}) {
+	app.component[name] = module
 }
 
-func (app *App) SetRpcBootstrap(callback func(*App)) {
-	app.rpcBootstrap = callback
+func (app *App) Get(name string) interface{} {
+	return app.component[name]
 }
 
-func (app *App) SetConfig(config *types.Config)  {
-	app.config = config
+func (app *App) ServerSetup(callbacks ...func(*App)) {
+	// 目前只支持单个 server 启动
+	for _, callback := range callbacks {
+		app.serverSetup = callback
+		break
+	}
 }
 
-func (app *App) Run() {
-	if app.rpcBootstrap != nil {
-		app.rpcBootstrap(app)
+func (app *App) Run() (err error) {
+	if app.serverSetup != nil {
+		app.serverSetup(app)
+		return
 	}
 
-	if app.httpBootstrap != nil {
-		app.httpBootstrap(app)
-	}
-
-	panic("服务启动失败，bootstrap 回掉方法未设置")
-}
-
-func (app *App) loadConfigFromFile(filepath string) {
-	content, err := ioutil.ReadFile(filepath)
-	if err != nil {
-		panic("配置文件[" + filepath + "]未找到")
-	}
-
-	config := types.Config{}
-	yaml.Unmarshal(content, &config)
-
-	app.config = &config
+	err = errors.NewFrameworkError(-1, "服务启动失败，bootstrap 回掉方法未设置")
+	return
 }

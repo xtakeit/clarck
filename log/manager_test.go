@@ -1,9 +1,9 @@
 package log
 
 import (
-	"github.com/anoxia/clarck/framework"
-	"github.com/anoxia/clarck/types"
 	"testing"
+
+	"github.com/anoxia/clarck/framework"
 )
 
 func TestInit(t *testing.T) {
@@ -16,25 +16,25 @@ func TestInit(t *testing.T) {
 	}
 }
 
-func constructApp () *framework.App {
-	fileOutput := make(map[string]types.FileConfig)
-	fileOutput[InfoLevel] = types.FileConfig{
+func constructApp() *framework.App {
+	fileOutput := make(map[string]FileConfig)
+	fileOutput[InfoLevel] = FileConfig{
 		OutPath:     "./info",
 		MaxAgeHours: 1,
 		RotateHours: 1,
 	}
-	fileOutput[ErrorLevel] = types.FileConfig{
+	fileOutput[ErrorLevel] = FileConfig{
 		OutPath:     "./error",
 		MaxAgeHours: 1,
 		RotateHours: 1,
 	}
 
 	app = &framework.App{}
-	app.SetConfig(&types.Config{
-		Log: types.LogConfigManager{
+	app.SetConfig(&Config{
+		Log: LogConfigManager{
 			Level:        InfoLevel,
 			ReportCaller: false,
-			LogType:      types.File,
+			LogType:      File,
 			FileOutput:   fileOutput,
 			RemoteOutput: nil,
 		},

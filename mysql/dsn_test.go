@@ -2,11 +2,9 @@ package mysql
 
 import (
 	"testing"
-
-	"github.com/anoxia/clarck/types"
 )
 
-var configForTest = types.MyqlConfig{
+var configForTest = MyqlConfig{
 	Host:     "127.0.0.1",
 	Port:     3306,
 	User:     "root",

@@ -1,4 +1,4 @@
-package types
+package log
 
 type FileConfig struct {
 	OutPath     string // 输出路径
@@ -13,9 +13,9 @@ type RemoteConfig struct {
 }
 
 type LogConfigManager struct {
-	Level        string                   // 日志级别
-	ReportCaller bool                     // 是否打印调用者
-	LogType      string                   // file、remote、all
+	Level        string                  // 日志级别
+	ReportCaller bool                    // 是否打印调用者
+	LogType      string                  // file、remote、all
 	FileOutput   map[string]FileConfig   // 文件
 	RemoteOutput map[string]RemoteConfig // 远程
 }

@@ -1,35 +1,33 @@
 package mysql
 
 import (
+	"github.com/anoxia/clarck"
 	"github.com/anoxia/clarck/errors"
 	"github.com/anoxia/clarck/framework"
 	"gorm.io/gorm"
 )
 
-type DatabaseManager struct {
+type Manager struct {
 	connections map[string]*Connection
 	app         *framework.App
+	config      *Config
 }
 
-var manager *DatabaseManager
+func New() *Manager {
+	app := clarck.App()
 
-func Init(app *framework.App) {
-	if manager == nil {
-		manager = &DatabaseManager{
-			connections: make(map[string]*Connection),
-			app:         app,
-		}
+	// 加载 MySQL 配置
+	config := &Config{}
+	app.ConfigLoad(config)
 
-		app.RegisterListenner("update:config", func(app *framework.App, action string) {
-		})
+	return &Manager{
+		connections: make(map[string]*Connection),
+		app:         app,
+		config:      config,
 	}
 }
 
-func Manager() *DatabaseManager {
-	return manager
-}
-
-func (m *DatabaseManager) Exist(name string) bool {
+func (m *Manager) Exist(name string) bool {
 	if _, ok := m.connections[name]; ok {
 		return true
 	} else {
@@ -37,7 +35,7 @@ func (m *DatabaseManager) Exist(name string) bool {
 	}
 }
 
-func (m *DatabaseManager) GetDB(names ...string) (*gorm.DB, error) {
+func (m *Manager) GetDB(names ...string) (*gorm.DB, error) {
 	connection, err := m.GetConnection(names...)
 	if err != nil {
 		return nil, err
@@ -46,20 +44,20 @@ func (m *DatabaseManager) GetDB(names ...string) (*gorm.DB, error) {
 	return connection.GetDB(), err
 }
 
-func (m *DatabaseManager) GetConnection(names ...string) (conn *Connection, err error) {
+func (m *Manager) GetConnection(names ...string) (conn *Connection, err error) {
 	name := nameWithDefault(names...)
 
 	if m.Exist(name) {
 		return m.connections[name], nil
 	}
 
-	if _, ok := m.app.Config().Database.Mysql[name]; !ok {
+	if _, ok := m.config.Mysql[name]; !ok {
 		return nil, errors.NewConfigError(-1, "数据库配置未找到，请检查配置文件(application.yml)", name)
 	}
 
 	// 数据库连接配置
 	// 来自 application.yml 配置文件
-	config := m.app.Config().Database.Mysql[name]
+	config := m.config.Mysql[name]
 
 	// 创建数据库连接并保存
 	// 下次可直接使用

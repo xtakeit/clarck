@@ -11,22 +11,20 @@ type LogManager struct {
 	app     *framework.App
 }
 
-var manager *LogManager
+func New() *LogManager {
+	// if manager == nil {
+	// 	log, err := NewLogger(&app.Config().Log)
+	// 	if err != nil {
+	// 		return err
+	// 	}
 
-func Init(app *framework.App) error {
-	if manager == nil {
-		log, err := NewLogger(&app.Config().Log)
-		if err != nil {
-			return err
-		}
-
-		manager = &LogManager{
-			loggers: log,
-			app:     app,
-		}
-		//TODO 等待添加文件监听事件
-	}
-	return nil
+	// 	manager = &LogManager{
+	// 		loggers: log,
+	// 		app:     app,
+	// 	}
+	// 	//TODO 等待添加文件监听事件
+	// }
+	return &LogManager{}
 }
 
 func (m *LogManager) Log(level logrus.Level, fields logrus.Fields) {
