@@ -11,7 +11,7 @@ func TestNewConnection(t *testing.T) {
 
 func TestGetDB(t *testing.T) {
 	con, _ := NewConnection(configForTest)
-	_, err := con.GetDB()
+	err := con.GetDB()
 	if err != nil {
 		t.Error("获取数据库链接失败")
 	}

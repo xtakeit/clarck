@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-var configForTest = MyqlConfig{
+var configForTest = ItemConfig{
 	Host:     "127.0.0.1",
 	Port:     3306,
 	User:     "root",
