@@ -8,10 +8,8 @@ import (
 )
 
 type App struct {
-	name        string
-	module      string
-	version     string
 	configPath  string
+	info        *Info
 	component   map[string]interface{}
 	serverSetup func(*App)
 }
@@ -25,27 +23,23 @@ func New() (app *App) {
 	app.configPath = os.Getenv("APPLICATION_FILE")
 
 	// 加载配置
-	c := &Config{}
-	config.LoadConfigFromFile(app.configPath, c)
-
-	// 将配置值注入当前实例
-	app.version = c.Application.Version
-	app.name = c.Application.Name
-	app.module = c.Application.Module
+	info := &Info{}
+	config.LoadConfigFromFile(app.configPath, info)
+	app.info = info
 
 	return
 }
 
 func (app *App) Name() string {
-	return app.name
+	return app.info.Application.Name
 }
 
 func (app *App) Module() string {
-	return app.module
+	return app.info.Application.Module
 }
 
 func (app *App) Version() string {
-	return app.version
+	return app.info.Application.Version
 }
 
 func (app *App) ConfigPath() string {
