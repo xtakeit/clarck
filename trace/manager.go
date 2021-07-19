@@ -1,0 +1,4 @@
+package trace
+
+func New() {
+}
