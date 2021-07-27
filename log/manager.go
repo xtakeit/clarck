@@ -1,8 +1,6 @@
 package log
 
 import (
-	"fmt"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/anoxia/clarck"
@@ -15,6 +13,8 @@ type Manager struct {
 	config  *Config
 }
 
+var componentName = "log"
+
 func New() *Manager {
 	app := clarck.App()
 
@@ -23,7 +23,7 @@ func New() *Manager {
 
 	logger, err := NewLogger(config)
 	if err != nil {
-		fmt.Println("logger加载失败")
+		panic("logger加载失败")
 	}
 
 	manager := &Manager{
@@ -31,6 +31,8 @@ func New() *Manager {
 		app:     app,
 		config:  config,
 	}
+
+	app.Set(componentName, manager)
 
 	return manager
 }
