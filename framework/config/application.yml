@@ -1,0 +1,9 @@
+mysql:
+  default:
+    Name: test
+    Host: 127.0.0.1
+    Port: 3306
+    User: root
+    Password: 123
+    Dbname: testDb
+    Charset: utf-8

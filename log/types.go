@@ -12,12 +12,14 @@ type RemoteConfig struct {
 	Api  string // 接口地址
 }
 
-type LogConfigManager struct {
-	Level        string                  // 日志级别
-	ReportCaller bool                    // 是否打印调用者
-	LogType      string                  // file、remote、all
-	FileOutput   map[string]FileConfig   // 文件
-	RemoteOutput map[string]RemoteConfig // 远程
+type Config struct {
+	Log struct {
+		Level        string
+		ReportCaller bool
+		LogType      string
+		FileOutput   map[string]FileConfig
+		RemoteOutput map[string]RemoteConfig
+	}
 }
 
 const (

@@ -3,6 +3,7 @@ package log
 import (
 	"bufio"
 	"encoding/json"
+	"github.com/anoxia/clarck"
 	"io"
 	"os"
 	"testing"
@@ -14,34 +15,10 @@ import (
 var app *framework.App
 
 func TestMain(m *testing.M) {
-	fileOutput := make(map[string]FileConfig)
-	fileOutput[InfoLevel] = FileConfig{
-		OutPath:     "./info",
-		MaxAgeHours: 1,
-		RotateHours: 1,
-	}
-	fileOutput[ErrorLevel] = FileConfig{
-		OutPath:     "./error",
-		MaxAgeHours: 1,
-		RotateHours: 1,
-	}
+	app = clarck.App()
+	manager := New()
+	app.Set("log", manager)
 
-	app = &framework.App{}
-	app.SetConfig(&Config{
-		Log: LogConfigManager{
-			Level:        InfoLevel,
-			ReportCaller: false,
-			LogType:      File,
-			FileOutput:   fileOutput,
-			RemoteOutput: nil,
-		},
-	})
-
-	err := Init(app)
-	if err != nil {
-		panic("logManager初始化失败")
-		return
-	}
 	m.Run()
 }
 
@@ -68,7 +45,10 @@ func BenchmarkLogParallel(b *testing.B) {
 }
 
 func TestNewLogger(t *testing.T) {
-	_, err := NewLogger(&app.Config().Log)
+	config := &Config{}
+	app.ConfigLoad(config)
+
+	_, err := NewLogger(config)
 	if err != nil {
 		t.Error("初始胡日志组件失败")
 	}

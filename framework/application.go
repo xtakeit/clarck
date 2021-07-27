@@ -24,7 +24,7 @@ func New() (app *App) {
 
 	// 加载配置
 	info := &Info{}
-	config.LoadConfigFromFile(app.configPath, info)
+	config.LoadConfig(info)
 	app.info = info
 
 	return
@@ -47,9 +47,9 @@ func (app *App) ConfigPath() string {
 }
 
 func (app *App) ConfigLoad(template interface{}) {
-	config.LoadConfigFromFile(app.configPath, template)
+	config.LoadConfig(template)
 }
-
+//TODO 建议添加类型检查和值检擦，防止组件间key覆盖（或输出提示）
 func (app *App) Set(name string, module interface{}) {
 	app.component[name] = module
 }

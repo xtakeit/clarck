@@ -31,7 +31,7 @@ type Logger struct {
 }
 
 // NewLogger 返回日志工具实例
-func NewLogger(cf *LogConfigManager) (logger *Logger, err error) {
+func NewLogger(cf *Config) (logger *Logger, err error) {
 	logger = &Logger{
 		Logger: logrus.New(),
 		outMap: make(map[string]io.Closer),
@@ -61,8 +61,8 @@ func NewLogger(cf *LogConfigManager) (logger *Logger, err error) {
 	return
 }
 
-func (logger *Logger) SetReportCaller(cf *LogConfigManager) {
-	logger.Logger.SetReportCaller(cf.ReportCaller)
+func (logger *Logger) SetReportCaller(cf *Config) {
+	logger.Logger.SetReportCaller(cf.Log.ReportCaller)
 }
 
 // SetFormatter 设置格式
@@ -73,8 +73,8 @@ func (logger *Logger) SetFormatter() {
 }
 
 // SetLevel 设置级别
-func (logger *Logger) SetLevel(cf *LogConfigManager) (err error) {
-	level, err := logrus.ParseLevel(cf.Level)
+func (logger *Logger) SetLevel(cf *Config) (err error) {
+	level, err := logrus.ParseLevel(cf.Log.Level)
 	if err != nil {
 		err = fmt.Errorf("parse level: %w", err)
 		return
@@ -95,17 +95,17 @@ func (logger *Logger) SetLevel(cf *LogConfigManager) (err error) {
 }*/
 
 // 设置日志输出，LogType不存在，默认文件输出
-func (logger *Logger) SetHook(cf *LogConfigManager) (err error) {
-	switch cf.LogType {
+func (logger *Logger) SetHook(cf *Config) (err error) {
+	switch cf.Log.LogType {
 	case File:
-		err = logger.setFileHook(cf.FileOutput)
+		err = logger.setFileHook(cf.Log.FileOutput)
 	case Remote:
 		//TODO 待添加远程输出
 	case All:
-		err = logger.setFileHook(cf.FileOutput)
+		err = logger.setFileHook(cf.Log.FileOutput)
 		//TODO 待添加远程输出
 	default:
-		err = logger.setFileHook(cf.FileOutput)
+		err = logger.setFileHook(cf.Log.FileOutput)
 	}
 	return
 }
